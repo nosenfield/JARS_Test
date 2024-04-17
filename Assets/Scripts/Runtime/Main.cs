@@ -67,48 +67,34 @@ public class Main : MonoBehaviour
 
     private void CheckAnimationDirectoryForFiles()
     {
-        string directoryPath = Path.Combine(Application.dataPath, jsonAnimationDirectory);
-        Debug.Log($"CheckAnimationDirectoryForFiles: {directoryPath}");
+        Debug.Log($"CheckAnimationDirectoryForFiles: {jsonAnimationDirectory}");
 
-        if (Directory.Exists(directoryPath))
+        if (Directory.Exists(jsonAnimationDirectory))
         {
-            Debug.Log($"Enumerating files at: ${directoryPath}");
-            List<string> currentFiles = new List<string>();
-            var jsonFiles = Directory.EnumerateFiles(directoryPath, "*.json");
+            Debug.Log($"Enumerating files at: ${jsonAnimationDirectory}");
+            var jsonFiles = Directory.EnumerateFiles(jsonAnimationDirectory, "*.json");
 
             foreach (string file in jsonFiles)
             {
-                if (knownFiles.Contains(file))
-                {
-                    Debug.Log($"Skipping file: {file}, already counted");
-                }
-                else
-                {
-                    Debug.Log($"Reading contents of: {file}");
+                Debug.Log($"Reading contents of: {file}");
 
-                    StreamReader reader = new StreamReader(file);
-                    var json = reader.ReadToEnd();
-                    JsonAnimation jsonAnimation = JsonUtility.FromJson<JsonAnimation>(json);
-                    reader.Close();
+                StreamReader reader = new StreamReader(file);
+                var json = reader.ReadToEnd();
+                JsonAnimation jsonAnimation = JsonUtility.FromJson<JsonAnimation>(json);
+                reader.Close();
 
-                    Debug.Log($"character: {jsonAnimation.character}");
-                    Debug.Log($"animation: {jsonAnimation.animation}");
-                    TriggerAnimation(jsonAnimation.character);
-                }
-
-                currentFiles.Add(file);
+                Debug.Log($"character: {jsonAnimation.character}");
+                Debug.Log($"animation: {jsonAnimation.animation}");
+                TriggerAnimation(jsonAnimation.character, jsonAnimation.animation);
             }
-
-            // resetting the list of known files to current files handles file deletion/recreation
-            knownFiles = currentFiles;
         }
         else
         {
-            Debug.LogError($"{directoryPath} does not exist!");
+            Debug.LogError($"{jsonAnimationDirectory} does not exist!");
         }
     }
 
-    void TriggerAnimation(string characterId)
+    void TriggerAnimation(string characterId, string animationId)
     {
         Debug.Log($"Trigger animation for character: {characterId}");
 
@@ -127,7 +113,10 @@ public class Main : MonoBehaviour
             }
             else
             {
-                animator.SetTrigger("Animate");
+                // animator.SetTrigger("Animate");
+                int id = 0;
+                int.TryParse(animationId.Split('_')[1], out id);
+                animator.SetInteger("AnimationId", id);
             }
         }
     }
